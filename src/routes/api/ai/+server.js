@@ -1,5 +1,5 @@
 import { json } from '@sveltejs/kit';
-import { GEMINI_API_KEY } from '$env/static/private';
+import { env } from '$env/dynamic/private';
 
 const SYSTEM_PROMPT = `
 Kamu adalah "Reflectify", seorang AI Companion yang bertindak sebagai guru batin mini.
@@ -21,13 +21,15 @@ export async function POST({ request }) {
             return json({ response: 'Prompt tidak valid.' }, { status: 400 });
         }
 
-        if (!GEMINI_API_KEY || GEMINI_API_KEY === 'your-gemini-api-key') {
+        const apiKey = env.GEMINI_API_KEY;
+
+        if (!apiKey || apiKey === 'your-gemini-api-key') {
             return json({
                 response: 'Kunci API Gemini belum dikonfigurasi. Silakan atur GEMINI_API_KEY di file .env.'
             });
         }
 
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
         const payload = {
             contents: [{ parts: [{ text: prompt }] }],
