@@ -21,34 +21,43 @@ export async function POST({ request }) {
             return json({ response: 'Prompt tidak valid.' }, { status: 400 });
         }
 
-        const apiKey = env.GEMINI_API_KEY;
+        const apiKey = env.OPENROUTER_API_KEY;
 
-        if (!apiKey || apiKey === 'your-gemini-api-key') {
+        if (!apiKey || apiKey === 'your-openrouter-api-key') {
             return json({
-                response: 'Kunci API Gemini belum dikonfigurasi. Silakan atur GEMINI_API_KEY di file .env.'
+                response: 'Kunci API OpenRouter belum dikonfigurasi. Silakan atur OPENROUTER_API_KEY di file .env.'
             });
         }
 
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+        const apiUrl = `https://openrouter.ai/api/v1/chat/completions`;
 
         const payload = {
-            contents: [{ parts: [{ text: prompt }] }],
-            systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] }
+            model: 'google/gemini-2.0-flash-001',
+            messages: [
+                { role: 'system', content: SYSTEM_PROMPT },
+                { role: 'user', content: prompt }
+            ]
         };
 
         const response = await fetch(apiUrl, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`,
+                'HTTP-Referer': 'https://reflectify.app', // Sesuaikan jika ada domain asli
+                'X-Title': 'Reflectify'
+            },
             body: JSON.stringify(payload)
         });
 
         if (!response.ok) {
+            const errorData = await response.text();
+            console.error('OpenRouter API Error:', errorData);
             throw new Error(`API request failed with status ${response.status}`);
         }
 
         const result = await response.json();
-        const candidate = result.candidates?.[0];
-        const text = candidate?.content?.parts?.[0]?.text;
+        const text = result.choices?.[0]?.message?.content;
 
         return json({
             response: text || 'Maaf, saya tidak yakin bagaimana harus merespons itu. Bisa coba lagi?'
