@@ -75,5 +75,9 @@ npm run preview
 ---
 
 <p align="center">
+<<<<<<< HEAD
   Made with ❤️ for a better self.
+=======
+  Made with ❤️ Jackie.
+>>>>>>> 55bd2dd119e7453436ec37206d04abc492404adc
 </p>
